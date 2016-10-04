@@ -1,0 +1,19 @@
+language: go
+
+go:
+  - 1.7.1
+  - tip
+
+sudo: true
+
+before_install:
+  - sudo add-apt-repository ppa:masterminds/glide -y && sudo apt-get update -q
+  - sudo apt-get install glide -y
+
+before_script:
+  - make deps
+
+script:
+  - make test
+  - make vet
+  - make fmt
