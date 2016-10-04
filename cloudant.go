@@ -1,33 +1,36 @@
 package cloudant
 
 import (
-	couchdb "github.com/timjacobi/go-couchdb"
-	request "github.com/parnurzeal/gorequest"
 	"fmt"
+	"strconv"
 
-	"strings"
+	request "github.com/parnurzeal/gorequest"
+	couchdb "github.com/timjacobi/go-couchdb"
+
 	"errors"
 )
 
-// CloudantClient ...
-type CloudantClient struct {
-	Client *couchdb.Client
+// Client ...
+type Client struct {
+	Client   *couchdb.Client
 	username string
 	password string
 }
 
+// Options ...
 type Options couchdb.Options
 
+// Query ...
 type Query struct {
-	Selector map[string] interface{} `json:"selector"`
-	Fields []string `json:"fields,omitempty"`
-	Sort []interface{} `json:"sort,omitempty"`
-	Limit int `json:"limit,omitempty"`
-	Skip int `json:"skip,omitempty"`
+	Selector map[string]interface{} `json:"selector"`
+	Fields   []string               `json:"fields,omitempty"`
+	Sort     []interface{}          `json:"sort,omitempty"`
+	Limit    int                    `json:"limit,omitempty"`
+	Skip     int                    `json:"skip,omitempty"`
 }
 
-//struct for index query
-type IndexStruct struct {
+// Index query struct
+type Index struct {
 	Index struct {
 		Fields interface{} `json:"fields"`
 	} `json:"index"`
@@ -36,95 +39,96 @@ type IndexStruct struct {
 	Ddoc string `json:"ddoc,omitempty"`
 }
 
-// NewCloudantClient ...
-func NewCloudantClient(username string, password string, dbName string) (*CloudantClient, error) {
+// NewClient ...
+func NewClient(username string, password string, dbName string) (*Client, error) {
 	auth := couchdb.BasicAuth(username, password)
 	url := fmt.Sprintf("https://%s.cloudant.com", username)
 	couchClient, err := couchdb.NewClient(url, nil)
 	couchClient.SetAuth(auth)
-	return &CloudantClient{Client:couchClient, username: username, password: password}, err
+	return &Client{Client: couchClient, username: username, password: password}, err
 }
 
-// CheckAlive ...
-func (c *CloudantClient) CheckAlive() error {
+// IsAlive check whether a server is alive.
+func (c *Client) IsAlive() error {
 	return c.Client.Ping()
 }
 
-
 // CreateDB ensures that a database with the given name exists.
-func (c *CloudantClient) CreateDB(dbName string) (*couchdb.DB, error) {
+func (c *Client) CreateDB(dbName string) (*couchdb.DB, error) {
 	return c.Client.CreateDB(dbName)
 }
 
 // DeleteDB ...
-func (c *CloudantClient) DeleteDB(dbName string) error {
+func (c *Client) DeleteDB(dbName string) error {
 	return c.Client.DeleteDB(dbName)
 }
 
 // CreateDocument ...
-func (c *CloudantClient) CreateDocument(dbName string, doc interface{}) (string, string, error) {
-	curDB := c.Client.DB(dbName)
-	return curDB.Post(doc)
+func (c *Client) CreateDocument(dbName string, doc interface{}) (string, string, error) {
+	db := c.Client.DB(dbName)
+	return db.Post(doc)
 }
 
 // DeleteDocument ...
-func (c *CloudantClient) DeleteDocument(dbName string, id string, rev string ) (string, error) {
-	curDB := c.Client.DB(dbName)
-	return curDB.Delete(id, rev)
+func (c *Client) DeleteDocument(dbName string, id string, rev string) (string, error) {
+	db := c.Client.DB(dbName)
+	return db.Delete(id, rev)
 }
 
 // UpdateDocument ...
-func (c *CloudantClient) UpdateDocument(dbName string, id string, rev string, doc interface{} ) (string, error) {
-	curDB := c.Client.DB(dbName)
-	return curDB.Put(id, doc, rev)
+func (c *Client) UpdateDocument(dbName string, id string, rev string, doc interface{}) (string, error) {
+	db := c.Client.DB(dbName)
+	return db.Put(id, doc, rev)
 }
+
 // GetDocument ...
-func (c *CloudantClient) GetDocument(dbName string, id string, doc interface{}, opts Options ) error {
-	curDB := c.Client.DB(dbName)
-	return curDB.Get(id, doc, couchdb.Options(opts))
+func (c *Client) GetDocument(dbName string, id string, doc interface{}, opts Options) error {
+	db := c.Client.DB(dbName)
+	return db.Get(id, doc, couchdb.Options(opts))
 }
 
 // GetRawDocument ...
-func (c *CloudantClient) GetRawDocument(dbName string, id string ) (string, error) {
-	curDB := c.Client.DB(dbName)
-	return curDB.Rev(id)
+func (c *Client) GetRawDocument(dbName string, id string) (string, error) {
+	db := c.Client.DB(dbName)
+	return db.Rev(id)
 }
 
-func (c *CloudantClient) GetAllDocument(dbName string, result interface{}, opts Options ) error {
-	curDB := c.Client.DB(dbName)
-	return curDB.AllDocs(result, couchdb.Options(opts))
+// GetAllDocument ...
+func (c *Client) GetAllDocument(dbName string, result interface{}, opts Options) error {
+	db := c.Client.DB(dbName)
+	return db.AllDocs(result, couchdb.Options(opts))
 }
 
-func (c *CloudantClient) SearchDocument(dbName string, query Query) (result []interface{}, err error) {
-	curDB := c.Client.DB(dbName)
+// SearchDocument ...
+func (c *Client) SearchDocument(dbName string, query Query) (result []interface{}, err error) {
+	db := c.Client.DB(dbName)
 	req := request.New()
-	path := "/" + curDB.Name() + "/_find"
+	path := "/" + db.Name() + "/_find"
 
 	var data struct {
-		Docs []interface{}
+		Docs     []interface{}
 		Bookmark string `json:"bookmark"`
 	}
 	_, _, errs := req.SetBasicAuth(c.username, c.password).Post(c.Client.URL() + path).Send(query).EndStruct(&data)
 
 	if errs != nil {
 		return nil, errs[0]
-	}else{
-		return data.Docs, nil
 	}
+	return data.Docs, nil
 }
 
-func (c *CloudantClient) SetIndex(dbName string, index IndexStruct) (bool, error) {
-	curDB := c.Client.DB(dbName)
+// SetIndex ...
+func (c *Client) SetIndex(dbName string, index Index) error {
+	db := c.Client.DB(dbName)
 	req := request.New()
-	path := "/" + curDB.Name() + "/_index"
+	path := "/" + db.Name() + "/_index"
 
-	resp , _, err := req.SetBasicAuth(c.username, c.password).Post(c.Client.URL() + path).Send(index).End()
-	if err!= nil {
-		return false, err[0]
+	resp, _, err := req.SetBasicAuth(c.username, c.password).Post(c.Client.URL() + path).Send(index).End()
+	if err != nil {
+		return err[0]
 	}
-	if !strings.Contains(resp.Status, "200"){
-		return false, errors.New("NOT AUTH")
+	if resp.StatusCode >= 400 {
+		return errors.New("Error in SetIndex: " + strconv.Itoa(resp.StatusCode))
 	}
-	return true, nil
+	return nil
 }
-
