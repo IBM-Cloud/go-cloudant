@@ -17,6 +17,20 @@ type Client struct {
 	password string
 }
 
+// DB ...
+type DB struct {
+	*couchdb.DB
+	username string
+	password string
+	path     string
+}
+
+// DB returns the DB object without verifying its existence.
+func (c *Client) DB(name string) *DB {
+	dbPath := c.Client.URL() + "/" + name
+	return &DB{c.Client.DB(name), c.username, c.password, dbPath}
+}
+
 // Options ...
 type Options couchdb.Options
 
@@ -54,8 +68,14 @@ func (c *Client) IsAlive() error {
 }
 
 // CreateDB ensures that a database with the given name exists.
-func (c *Client) CreateDB(dbName string) (*couchdb.DB, error) {
-	return c.Client.CreateDB(dbName)
+func (c *Client) CreateDB(dbName string) (*DB, error) {
+	var db *couchdb.DB
+	var err error
+	if db, err = c.Client.CreateDB(dbName); err != nil {
+		return nil, err
+	}
+	dbPath := c.Client.URL() + "/" + dbName
+	return &DB{db, c.username, c.password, dbPath}, nil
 }
 
 // DeleteDB ...
@@ -64,52 +84,45 @@ func (c *Client) DeleteDB(dbName string) error {
 }
 
 // CreateDocument ...
-func (c *Client) CreateDocument(dbName string, doc interface{}) (string, string, error) {
-	db := c.Client.DB(dbName)
+func (db *DB) CreateDocument(doc interface{}) (string, string, error) {
 	return db.Post(doc)
 }
 
 // DeleteDocument ...
-func (c *Client) DeleteDocument(dbName string, id string, rev string) (string, error) {
-	db := c.Client.DB(dbName)
+func (db *DB) DeleteDocument(id string, rev string) (string, error) {
 	return db.Delete(id, rev)
 }
 
 // UpdateDocument ...
-func (c *Client) UpdateDocument(dbName string, id string, rev string, doc interface{}) (string, error) {
-	db := c.Client.DB(dbName)
+func (db *DB) UpdateDocument(id string, rev string, doc interface{}) (string, error) {
 	return db.Put(id, doc, rev)
 }
 
 // GetDocument ...
-func (c *Client) GetDocument(dbName string, id string, doc interface{}, opts Options) error {
-	db := c.Client.DB(dbName)
+func (db *DB) GetDocument(id string, doc interface{}, opts Options) error {
 	return db.Get(id, doc, couchdb.Options(opts))
 }
 
 // GetRawDocument ...
-func (c *Client) GetRawDocument(dbName string, id string) (string, error) {
-	db := c.Client.DB(dbName)
+func (db *DB) GetRawDocument(id string) (string, error) {
 	return db.Rev(id)
 }
 
 // GetAllDocument ...
-func (c *Client) GetAllDocument(dbName string, result interface{}, opts Options) error {
-	db := c.Client.DB(dbName)
+func (db *DB) GetAllDocument(result interface{}, opts Options) error {
 	return db.AllDocs(result, couchdb.Options(opts))
 }
 
 // SearchDocument ...
-func (c *Client) SearchDocument(dbName string, query Query) (result []interface{}, err error) {
-	db := c.Client.DB(dbName)
+func (db *DB) SearchDocument(query Query) (result []interface{}, err error) {
 	req := request.New()
-	path := "/" + db.Name() + "/_find"
+	path := "/_find"
 
 	var data struct {
 		Docs     []interface{}
 		Bookmark string `json:"bookmark"`
 	}
-	_, _, errs := req.SetBasicAuth(c.username, c.password).Post(c.Client.URL() + path).Send(query).EndStruct(&data)
+	_, _, errs := req.SetBasicAuth(db.username, db.password).Post(db.path + path).Send(query).EndStruct(&data)
 
 	if errs != nil {
 		return nil, errs[0]
@@ -118,12 +131,11 @@ func (c *Client) SearchDocument(dbName string, query Query) (result []interface{
 }
 
 // SetIndex ...
-func (c *Client) SetIndex(dbName string, index Index) error {
-	db := c.Client.DB(dbName)
+func (db *DB) SetIndex(index Index) error {
 	req := request.New()
-	path := "/" + db.Name() + "/_index"
+	path := "/_index"
 
-	resp, _, err := req.SetBasicAuth(c.username, c.password).Post(c.Client.URL() + path).Send(index).End()
+	resp, _, err := req.SetBasicAuth(db.username, db.password).Post(db.path + path).Send(index).End()
 	if err != nil {
 		return err[0]
 	}
