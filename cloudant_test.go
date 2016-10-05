@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"io/ioutil"
 )
 
 var username = os.Getenv("CLOUDANT_USER_NAME")
@@ -164,4 +165,15 @@ func TestSearchDocument(t *testing.T) {
 		r := element.(map[string]interface{})
 		assert.Equal(t, "11", r["id"])
 	}
+}
+
+func TestDB_CreateDesignDoc(t *testing.T) {
+	t.Log("Testing creating design doc")
+	file, _ := ioutil.ReadFile("example.json")
+	err := testDB.CreateDesignDoc("example", string(file))
+	assert.NoError(t, err)
+	result := make(map[string]interface{})
+	err = testDB.GetDocument("_design/example", &result, Options{})
+	assert.NoError(t, err)
+
 }

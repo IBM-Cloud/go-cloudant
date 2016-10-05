@@ -1,5 +1,5 @@
 hash: 28cf663e1845e6e739ef6c6e3479fc564b3086627fb9dff99838d2b69c65893c
-updated: 2016-10-04T19:08:47.489770573-04:00
+updated: 2016-10-05T14:22:27.166809844-04:00
 imports:
 - name: github.com/moul/http2curl
   version: b1479103caacaa39319f75e7f57fc545287fca0d
@@ -8,7 +8,7 @@ imports:
 - name: github.com/timjacobi/go-couchdb
   version: 5f9d2a1a29e5b126e51255e92f8c420b0c7a60ac
 - name: golang.org/x/net
-  version: f315505cf3349909cdf013ea56690da34e96a451
+  version: ffe101cce3477a6c6d8f0754d103bb0a84ec1266
   subpackages:
   - publicsuffix
 testImports:

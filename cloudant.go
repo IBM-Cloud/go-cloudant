@@ -135,12 +135,30 @@ func (db *DB) SetIndex(index Index) error {
 	req := request.New()
 	path := "/_index"
 
-	resp, _, err := req.SetBasicAuth(db.username, db.password).Post(db.path + path).Send(index).End()
-	if err != nil {
-		return err[0]
+	resp, _, errs := req.SetBasicAuth(db.username, db.password).Post(db.path + path).Send(index).End()
+	if errs != nil {
+		return errs[0]
 	}
 	if resp.StatusCode >= 400 {
-		return errors.New("Error in SetIndex: " + strconv.Itoa(resp.StatusCode))
+		return errors.New("Error in setting index: " + strconv.Itoa(resp.StatusCode))
+	}
+	return nil
+}
+
+func (db *DB) CreateDesignDoc(name string, jsonContent string) error {
+	var data struct {
+		Ok  bool   `json:"ok"`
+		ID  string `json:"id"`
+		Rev string `json:"rev"`
+	}
+	req := request.New()
+	path := "/_design" + "/" + name
+	_, _, errs := req.SetBasicAuth(db.username, db.password).Put(db.path + path).SendString(jsonContent).EndStruct(&data)
+	if errs != nil {
+		return errs[0]
+	}
+	if data.Ok != true {
+		return errors.New("Error in creating design doc")
 	}
 	return nil
 }
