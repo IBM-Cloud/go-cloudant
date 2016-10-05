@@ -1,13 +1,12 @@
 package cloudant
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 
 	request "github.com/parnurzeal/gorequest"
 	couchdb "github.com/timjacobi/go-couchdb"
-
-	"errors"
 )
 
 // Client ...
@@ -145,7 +144,8 @@ func (db *DB) SetIndex(index Index) error {
 	return nil
 }
 
-func (db *DB) CreateDesignDoc(name string, jsonContent string) error {
+// CreateDesignDoc ...
+func (db *DB) CreateDesignDoc(name string, designJSON string) error {
 	var data struct {
 		Ok  bool   `json:"ok"`
 		ID  string `json:"id"`
@@ -153,7 +153,7 @@ func (db *DB) CreateDesignDoc(name string, jsonContent string) error {
 	}
 	req := request.New()
 	path := "/_design" + "/" + name
-	_, _, errs := req.SetBasicAuth(db.username, db.password).Put(db.path + path).SendString(jsonContent).EndStruct(&data)
+	_, _, errs := req.SetBasicAuth(db.username, db.password).Put(db.path + path).SendString(designJSON).EndStruct(&data)
 	if errs != nil {
 		return errs[0]
 	}
