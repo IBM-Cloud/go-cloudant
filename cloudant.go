@@ -162,3 +162,7 @@ func (db *DB) CreateDesignDoc(name string, designJSON string) error {
 	}
 	return nil
 }
+
+func (db *DB) GetView(ddoc string, view string, result interface{}, opts Options) error {
+	return db.View(ddoc, view, result, couchdb.Options(opts))
+}

@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"fmt"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -177,4 +178,12 @@ func TestCreateDesignDoc(t *testing.T) {
 	result := make(map[string]interface{})
 	err = testDB.GetDocument("_design/example", &result, Options{})
 	assert.NoError(t, err)
+}
+
+func TestDB_GetView(t *testing.T) {
+	t.Log("Testing Getting View")
+	var result interface{}
+	err := testDB.GetView("_design/example", "foo", &result, Options{})
+	assert.NoError(t, err)
+
 }
