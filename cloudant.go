@@ -77,6 +77,17 @@ func (c *Client) CreateDB(dbName string) (*DB, error) {
 	return &DB{db, c.username, c.password, dbPath}, nil
 }
 
+// EnsureDB ensures that a database with the given name exists.
+func (c *Client) EnsureDB(name string) (*DB, error) {
+	var db *couchdb.DB
+	var err error
+	if db, err = c.Client.EnsureDB(name); err != nil {
+		return nil, err
+	}
+	dbPath := c.Client.URL() + "/" + name
+	return &DB{db, c.username, c.password, dbPath}, nil
+}
+
 // DeleteDB ...
 func (c *Client) DeleteDB(dbName string) error {
 	return c.Client.DeleteDB(dbName)
@@ -102,8 +113,8 @@ func (db *DB) GetDocument(id string, doc interface{}, opts Options) error {
 	return db.Get(id, doc, couchdb.Options(opts))
 }
 
-// GetRawDocument ...
-func (db *DB) GetRawDocument(id string) (string, error) {
+// GetDocumentRev gets the current document revision.
+func (db *DB) GetDocumentRev(id string) (string, error) {
 	return db.Rev(id)
 }
 
