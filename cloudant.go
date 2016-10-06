@@ -113,8 +113,8 @@ func (db *DB) GetDocument(id string, doc interface{}, opts Options) error {
 	return db.Get(id, doc, couchdb.Options(opts))
 }
 
-// GetRawDocument ...
-func (db *DB) GetRawDocument(id string) (string, error) {
+// GetDocumentRev gets the current document revision.
+func (db *DB) GetDocumentRev(id string) (string, error) {
 	return db.Rev(id)
 }
 
