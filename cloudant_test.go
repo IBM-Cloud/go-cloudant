@@ -168,7 +168,7 @@ func TestSearchDocument(t *testing.T) {
 	}
 }
 
-func TestDB_CreateDesignDoc(t *testing.T) {
+func TestCreateDesignDoc(t *testing.T) {
 	t.Log("Testing creating design doc")
 	filePath := filepath.Join("test-fixtures", "example.json")
 	file, _ := ioutil.ReadFile(filePath)
