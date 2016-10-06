@@ -21,7 +21,7 @@ var testDB *DB
 func TestMain(m *testing.M) {
 	// Create the test client
 	var err error
-	if testClient, err = NewClient(username, password, testDBName); err != nil {
+	if testClient, err = NewClient(username, password); err != nil {
 		os.Exit(1)
 	}
 
