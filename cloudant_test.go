@@ -7,7 +7,6 @@ import (
 	"path/filepath"
 	"testing"
 
-	"fmt"
 	"github.com/stretchr/testify/assert"
 )
 
