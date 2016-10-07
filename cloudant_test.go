@@ -2,11 +2,12 @@ package cloudant
 
 import (
 	"flag"
+	"io/ioutil"
 	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"io/ioutil"
 )
 
 var username = os.Getenv("CLOUDANT_USER_NAME")
@@ -20,7 +21,7 @@ var testDB *DB
 func TestMain(m *testing.M) {
 	// Create the test client
 	var err error
-	if testClient, err = NewClient(username, password, testDBName); err != nil {
+	if testClient, err = NewClient(username, password); err != nil {
 		os.Exit(1)
 	}
 
@@ -167,13 +168,21 @@ func TestSearchDocument(t *testing.T) {
 	}
 }
 
-func TestDB_CreateDesignDoc(t *testing.T) {
+func TestCreateDesignDoc(t *testing.T) {
 	t.Log("Testing creating design doc")
-	file, _ := ioutil.ReadFile("example.json")
+	filePath := filepath.Join("test-fixtures", "example.json")
+	file, _ := ioutil.ReadFile(filePath)
 	err := testDB.CreateDesignDoc("example", string(file))
 	assert.NoError(t, err)
 	result := make(map[string]interface{})
 	err = testDB.GetDocument("_design/example", &result, Options{})
+	assert.NoError(t, err)
+}
+
+func TestDB_GetView(t *testing.T) {
+	t.Log("Testing Getting View")
+	var result interface{}
+	err := testDB.GetView("_design/example", "foo", &result, Options{})
 	assert.NoError(t, err)
 
 }

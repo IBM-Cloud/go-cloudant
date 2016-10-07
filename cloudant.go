@@ -1,13 +1,12 @@
 package cloudant
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 
 	request "github.com/parnurzeal/gorequest"
 	couchdb "github.com/timjacobi/go-couchdb"
-
-	"errors"
 )
 
 // Client ...
@@ -54,7 +53,7 @@ type Index struct {
 }
 
 // NewClient ...
-func NewClient(username string, password string, dbName string) (*Client, error) {
+func NewClient(username string, password string) (*Client, error) {
 	auth := couchdb.BasicAuth(username, password)
 	url := fmt.Sprintf("https://%s.cloudant.com", username)
 	couchClient, err := couchdb.NewClient(url, nil)
@@ -75,6 +74,17 @@ func (c *Client) CreateDB(dbName string) (*DB, error) {
 		return nil, err
 	}
 	dbPath := c.Client.URL() + "/" + dbName
+	return &DB{db, c.username, c.password, dbPath}, nil
+}
+
+// EnsureDB ensures that a database with the given name exists.
+func (c *Client) EnsureDB(name string) (*DB, error) {
+	var db *couchdb.DB
+	var err error
+	if db, err = c.Client.EnsureDB(name); err != nil {
+		return nil, err
+	}
+	dbPath := c.Client.URL() + "/" + name
 	return &DB{db, c.username, c.password, dbPath}, nil
 }
 
@@ -103,8 +113,8 @@ func (db *DB) GetDocument(id string, doc interface{}, opts Options) error {
 	return db.Get(id, doc, couchdb.Options(opts))
 }
 
-// GetRawDocument ...
-func (db *DB) GetRawDocument(id string) (string, error) {
+// GetDocumentRev gets the current document revision.
+func (db *DB) GetDocumentRev(id string) (string, error) {
 	return db.Rev(id)
 }
 
@@ -145,7 +155,8 @@ func (db *DB) SetIndex(index Index) error {
 	return nil
 }
 
-func (db *DB) CreateDesignDoc(name string, jsonContent string) error {
+// CreateDesignDoc ...
+func (db *DB) CreateDesignDoc(name string, designJSON string) error {
 	var data struct {
 		Ok  bool   `json:"ok"`
 		ID  string `json:"id"`
@@ -153,7 +164,7 @@ func (db *DB) CreateDesignDoc(name string, jsonContent string) error {
 	}
 	req := request.New()
 	path := "/_design" + "/" + name
-	_, _, errs := req.SetBasicAuth(db.username, db.password).Put(db.path + path).SendString(jsonContent).EndStruct(&data)
+	_, _, errs := req.SetBasicAuth(db.username, db.password).Put(db.path + path).SendString(designJSON).EndStruct(&data)
 	if errs != nil {
 		return errs[0]
 	}
@@ -161,4 +172,8 @@ func (db *DB) CreateDesignDoc(name string, jsonContent string) error {
 		return errors.New("Error in creating design doc")
 	}
 	return nil
+}
+
+func (db *DB) GetView(ddoc string, view string, result interface{}, opts Options) error {
+	return db.View(ddoc, view, result, couchdb.Options(opts))
 }
