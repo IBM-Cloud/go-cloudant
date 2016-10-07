@@ -20,10 +20,10 @@ For detailed usage, check cloudant_test.go
 
 ## Test
 
-    `go test`
+    make test
 
-All methods should be covered by tests
-
+All methods should be covered by tests, and the Makefile will also check
+the format of the code, so try to use `make all` before the commit.
 
 ## Contribution
     
