@@ -179,10 +179,24 @@ func TestCreateDesignDoc(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestDB_GetView(t *testing.T) {
-	t.Log("Testing Getting View")
+func TestGetView(t *testing.T) {
+	t.Log("Testing getting view")
 	var result interface{}
 	err := testDB.GetView("_design/example", "foo", &result, Options{})
 	assert.NoError(t, err)
 
+}
+
+func TestSearchInDesignDoc(t *testing.T) {
+	t.Log("Testing searching index defined in design doc")
+	filePath := filepath.Join("test-fixtures", "search_test.json")
+	file, _ := ioutil.ReadFile(filePath)
+	err := testDB.CreateDesignDoc("search_test", string(file))
+	assert.NoError(t, err)
+	ddoc := &DesignDocument{"search_test"}
+	query := "id:\"111\" AND name:\"test3-3\""
+	resp, err := ddoc.Search(testDB, "byField", query, 200)
+	t.Logf("Search response: %#v", resp)
+	assert.NoError(t, err)
+	assert.Equal(t, 1, resp.Num)
 }

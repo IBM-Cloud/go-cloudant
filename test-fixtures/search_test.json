@@ -1,0 +1,8 @@
+{
+  "_id": "_design/search_test",
+  "indexes": {
+    "byField": {
+      "index": "function(doc){\n if (typeof(doc.id) !== 'undefined'){\n index(\"id\", doc.id, {\"store\": true});\n }\n if (typeof(doc.name) !== 'undefined'){\n index(\"name\", doc.name, {\"store\": true});\n }\n }"
+    }
+  }
+}

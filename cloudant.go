@@ -163,7 +163,7 @@ func (db *DB) CreateDesignDoc(name string, designJSON string) error {
 		Rev string `json:"rev"`
 	}
 	req := request.New()
-	path := "/_design" + "/" + name
+	path := "/_design/" + name
 	_, _, errs := req.SetBasicAuth(db.username, db.password).Put(db.path + path).SendString(designJSON).EndStruct(&data)
 	if errs != nil {
 		return errs[0]
@@ -174,6 +174,41 @@ func (db *DB) CreateDesignDoc(name string, designJSON string) error {
 	return nil
 }
 
+// GetView ...
 func (db *DB) GetView(ddoc string, view string, result interface{}, opts Options) error {
 	return db.View(ddoc, view, result, couchdb.Options(opts))
+}
+
+// DesignDocument ...
+type DesignDocument struct {
+	Name string
+}
+
+type searchRows struct {
+	ID     string      `json:"id"`
+	Order  []float64   `json:"order"`
+	Fields interface{} `json:"fields"`
+}
+
+// SearchResp ...
+type SearchResp struct {
+	Num      int          `json:"total_rows"`
+	Bookmark string       `json:"bookmark"`
+	Rows     []searchRows `json:"rows"`
+}
+
+// Search indexes, defined in design documents.
+// Cloudant doc: https://docs.cloudant.com/search.html
+func (ddoc *DesignDocument) Search(db *DB, index, query string, limit int) (*SearchResp, error) {
+	path := "/_design/" + ddoc.Name + "/_search/" + index
+	body := &SearchResp{}
+	if _, _, errs := request.New().
+		SetBasicAuth(db.username, db.password).
+		Get(db.path + path).
+		Query("query=" + query).
+		Query("limit=" + strconv.Itoa(limit)).
+		EndStruct(body); errs != nil {
+		return nil, errs[len(errs)-1]
+	}
+	return body, nil
 }
