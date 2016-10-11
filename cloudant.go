@@ -181,7 +181,19 @@ func (db *DB) GetView(ddoc string, view string, result interface{}, opts Options
 
 // DesignDocument ...
 type DesignDocument struct {
-	Name string
+	ID      string                 `json:"_id"`
+	Indexes map[string]interface{} `json:"indexes,omitempty"`
+	Views   map[string]interface{} `json:"views,omitempty"`
+}
+
+// NewDesignDocument ...
+func NewDesignDocument(name string) *DesignDocument {
+	return &DesignDocument{ID: "_design/" + name}
+}
+
+// Get design document.
+func (ddoc *DesignDocument) Get(db *DB) error {
+	return db.GetDocument(ddoc.ID, ddoc, Options{})
 }
 
 type searchRows struct {
@@ -200,7 +212,7 @@ type SearchResp struct {
 // Search indexes, defined in design documents.
 // Cloudant doc: https://docs.cloudant.com/search.html
 func (ddoc *DesignDocument) Search(db *DB, index, query string, limit int) (*SearchResp, error) {
-	path := "/_design/" + ddoc.Name + "/_search/" + index
+	path := "/" + ddoc.ID + "/_search/" + index
 	body := &SearchResp{}
 	if _, _, errs := request.New().
 		SetBasicAuth(db.username, db.password).

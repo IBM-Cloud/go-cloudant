@@ -174,8 +174,12 @@ func TestCreateDesignDoc(t *testing.T) {
 	file, _ := ioutil.ReadFile(filePath)
 	err := testDB.CreateDesignDoc("example", string(file))
 	assert.NoError(t, err)
-	result := make(map[string]interface{})
-	err = testDB.GetDocument("_design/example", &result, Options{})
+}
+
+func TestGetDesignDoc(t *testing.T) {
+	t.Log("Testing getting design doc")
+	ddoc := NewDesignDocument("example")
+	err := ddoc.Get(testDB)
 	assert.NoError(t, err)
 }
 
@@ -193,10 +197,9 @@ func TestSearchInDesignDoc(t *testing.T) {
 	file, _ := ioutil.ReadFile(filePath)
 	err := testDB.CreateDesignDoc("search_test", string(file))
 	assert.NoError(t, err)
-	ddoc := &DesignDocument{"search_test"}
+	ddoc := NewDesignDocument("search_test")
 	query := "id:\"111\" AND name:\"test3-3\""
 	resp, err := ddoc.Search(testDB, "byField", query, 200)
-	t.Logf("Search response: %#v", resp)
 	assert.NoError(t, err)
 	assert.Equal(t, 1, resp.Num)
 }
