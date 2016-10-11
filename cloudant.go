@@ -196,7 +196,7 @@ func (ddoc *DesignDocument) Get(db *DB) error {
 	return db.GetDocument(ddoc.ID, ddoc, Options{})
 }
 
-type searchRows struct {
+type searchRow struct {
 	ID     string      `json:"id"`
 	Order  []float64   `json:"order"`
 	Fields interface{} `json:"fields"`
@@ -204,22 +204,25 @@ type searchRows struct {
 
 // SearchResp ...
 type SearchResp struct {
-	Num      int          `json:"total_rows"`
-	Bookmark string       `json:"bookmark"`
-	Rows     []searchRows `json:"rows"`
+	Num      int         `json:"total_rows"`
+	Bookmark string      `json:"bookmark"`
+	Rows     []searchRow `json:"rows"`
 }
 
 // Search indexes, defined in design documents.
 // Cloudant doc: https://docs.cloudant.com/search.html
-func (ddoc *DesignDocument) Search(db *DB, index, query string, limit int) (*SearchResp, error) {
+func (ddoc *DesignDocument) Search(db *DB, index, query, bookmark string, limit int) (*SearchResp, error) {
 	path := "/" + ddoc.ID + "/_search/" + index
 	body := &SearchResp{}
-	if _, _, errs := request.New().
+	req := request.New().
 		SetBasicAuth(db.username, db.password).
 		Get(db.path + path).
 		Query("query=" + query).
-		Query("limit=" + strconv.Itoa(limit)).
-		EndStruct(body); errs != nil {
+		Query("limit=" + strconv.Itoa(limit))
+	if bookmark != "" {
+		req = req.Query("bookmark=" + bookmark)
+	}
+	if _, _, errs := req.EndStruct(body); errs != nil {
 		return nil, errs[len(errs)-1]
 	}
 	return body, nil

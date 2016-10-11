@@ -199,7 +199,7 @@ func TestSearchInDesignDoc(t *testing.T) {
 	assert.NoError(t, err)
 	ddoc := NewDesignDocument("search_test")
 	query := "id:\"111\" AND name:\"test3-3\""
-	resp, err := ddoc.Search(testDB, "byField", query, 200)
+	resp, err := ddoc.Search(testDB, "byField", query, "", 200)
 	assert.NoError(t, err)
 	assert.Equal(t, 1, resp.Num)
 }
