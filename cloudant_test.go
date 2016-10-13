@@ -185,10 +185,10 @@ func TestGetDesignDoc(t *testing.T) {
 
 func TestGetView(t *testing.T) {
 	t.Log("Testing getting view")
-	var result interface{}
-	err := testDB.GetView("_design/example", "foo", &result, Options{})
+	ddoc := NewDesignDocument("example")
+	view := "foo"
+	_, err := ddoc.View(testDB, view)
 	assert.NoError(t, err)
-
 }
 
 func TestSearchInDesignDoc(t *testing.T) {

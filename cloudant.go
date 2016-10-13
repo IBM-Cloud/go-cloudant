@@ -174,11 +174,6 @@ func (db *DB) CreateDesignDoc(name string, designJSON string) error {
 	return nil
 }
 
-// GetView ...
-func (db *DB) GetView(ddoc string, view string, result interface{}, opts Options) error {
-	return db.View(ddoc, view, result, couchdb.Options(opts))
-}
-
 // DesignDocument ...
 type DesignDocument struct {
 	ID      string                 `json:"_id"`
@@ -222,6 +217,27 @@ func (ddoc *DesignDocument) Search(db *DB, index, query, bookmark string, limit 
 	if bookmark != "" {
 		req = req.Query("bookmark=" + bookmark)
 	}
+	if _, _, errs := req.EndStruct(body); errs != nil {
+		return nil, errs[len(errs)-1]
+	}
+	return body, nil
+}
+
+// ViewResp ...
+type ViewResp struct {
+	Num    int           `json:"total_rows"`
+	Offset int           `json:"offset"`
+	Rows   []interface{} `json:"rows"`
+}
+
+// View ...
+// Cloudant doc: https://docs.cloudant.com/creating_views.html
+func (ddoc *DesignDocument) View(db *DB, view string) (*ViewResp, error) {
+	path := "/" + ddoc.ID + "/_view/" + view
+	body := &ViewResp{}
+	req := request.New().
+		SetBasicAuth(db.username, db.password).
+		Get(db.path + path)
 	if _, _, errs := req.EndStruct(body); errs != nil {
 		return nil, errs[len(errs)-1]
 	}

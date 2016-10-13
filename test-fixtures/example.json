@@ -2,7 +2,7 @@
   "_id": "_design/example",
   "views": {
     "foo": {
-      "map": "function(doc){ emit(doc._id, doc._rev)}"
+      "map": "function(doc){ if(doc.id && doc.name){ emit(doc.id, doc.name) } }"
     }
   }
 }
