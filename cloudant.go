@@ -53,12 +53,12 @@ type Index struct {
 }
 
 // NewClient ...
-func NewClient(username string, password string) (*Client, error) {
-	auth := couchdb.BasicAuth(username, password)
+func NewClient(username string, apikey string, password string) (*Client, error) {
+	auth := couchdb.BasicAuth(apikey, password)
 	url := fmt.Sprintf("https://%s.cloudant.com", username)
 	couchClient, err := couchdb.NewClient(url, nil)
 	couchClient.SetAuth(auth)
-	return &Client{Client: couchClient, username: username, password: password}, err
+	return &Client{Client: couchClient, username: apikey, password: password}, err
 }
 
 // IsAlive check whether a server is alive.
