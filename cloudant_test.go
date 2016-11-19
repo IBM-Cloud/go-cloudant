@@ -14,8 +14,7 @@ import (
 var username = os.Getenv("CLOUDANT_USER_NAME")
 var apikey = os.Getenv("CLOUDANT_API_KEY")
 var password = os.Getenv("CLOUDANT_PASSWORD")
-
-const testDBName = "test_db"
+var testDBName = os.Getenv("CLOUDANT_DATABASE")
 
 var testClient *Client
 var testDB *DB
@@ -32,7 +31,12 @@ func TestMain(m *testing.M) {
 
 	// Run tests
 	flag.Parse()
-	os.Exit(m.Run())
+
+	testClient.CreateDB(testDBName)
+	result := m.Run()
+	testClient.DeleteDB(testDBName)
+
+	os.Exit(result)
 }
 
 func TestConnection(t *testing.T) {
