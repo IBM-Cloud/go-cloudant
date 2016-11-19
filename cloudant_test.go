@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// make sure these are set in travis-ci
 var username = os.Getenv("CLOUDANT_USER_NAME")
 var apikey = os.Getenv("CLOUDANT_API_KEY")
 var password = os.Getenv("CLOUDANT_PASSWORD")
