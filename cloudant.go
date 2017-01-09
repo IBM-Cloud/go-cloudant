@@ -53,7 +53,12 @@ type Index struct {
 }
 
 // NewClient ...
-func NewClient(username string, apikey string, password string) (*Client, error) {
+func NewClient(username string, password string) (*Client, error) {
+	return NewClientWithAPIKey(username, username, password)
+}
+
+// NewClientWithAPIKey ...
+func NewClientWithAPIKey(username string, apikey string, password string) (*Client, error) {
 	auth := couchdb.BasicAuth(apikey, password)
 	url := fmt.Sprintf("https://%s.cloudant.com", username)
 	couchClient, err := couchdb.NewClient(url, nil)
