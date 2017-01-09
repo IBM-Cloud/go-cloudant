@@ -22,7 +22,7 @@ var testDB *DB
 func TestMain(m *testing.M) {
 	// Create the test client
 	var err error
-	if testClient, err = NewClient(username, apikey, password); err != nil {
+	if testClient, err = NewClientWithAPIKey(username, apikey, password); err != nil {
 		os.Exit(1)
 	}
 
