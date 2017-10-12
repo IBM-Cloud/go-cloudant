@@ -12,6 +12,7 @@ import (
 
 var username = os.Getenv("CLOUDANT_USER_NAME")
 var password = os.Getenv("CLOUDANT_PASSWORD")
+var url = os.Getenv("CLOUDANT_URL")
 
 const testDBName = "test_db"
 
@@ -21,7 +22,7 @@ var testDB *DB
 func TestMain(m *testing.M) {
 	// Create the test client
 	var err error
-	if testClient, err = NewClient(username, password); err != nil {
+	if testClient, err = NewClient(username, password, url); err != nil {
 		os.Exit(1)
 	}
 
