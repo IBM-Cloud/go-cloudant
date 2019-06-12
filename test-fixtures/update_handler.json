@@ -1,0 +1,6 @@
+{
+    "_id": "_design/update_example",
+    "updates": {
+        "update_handler_example": "function(doc, req){ if (!doc){ return [null, 'Document not found'] } doc.lang = 'GoLand'; return [doc, 'ok'] }"
+    }
+}

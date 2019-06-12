@@ -203,3 +203,31 @@ func TestSearchInDesignDoc(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, 1, resp.Num)
 }
+
+func TestUpdateDocumentByUpdateHandler(t *testing.T) {
+	t.Log("Testing Update Document by UpdateHandler")
+	//Step 1. Create UpdateHandler
+	filePath := filepath.Join("test-fixtures", "update_handler.json")
+	file, _ := ioutil.ReadFile(filePath)
+	err := testDB.CreateDesignDoc("update_example", string(file))
+	assert.NoError(t, err)
+
+	//Step 1. Create Document
+	type data struct {
+		ID   string `json:"id"`
+		Name string `json:"name"`
+	}
+	testData1 := &data{
+		ID:   "testUpdate",
+		Name: "test1-update",
+	}
+	_, _, err1 := testDB.CreateDocument(testData1)
+	assert.NoError(t, err1)
+
+	//Step 3. Update document by UpdateHandler
+	err2 := testDB.UpdateDocumentByUpdateHandler("testUpdate", "update_example", "update_handler_example", testData1)
+	assert.NoError(t, err2)
+	err3 := testDB.UpdateDocumentByUpdateHandler("fakeID", "update_example", "update_handler_example", testData1)
+	assert.NoError(t, err3)
+	assert.Error(t, err, "Document not found")
+}
