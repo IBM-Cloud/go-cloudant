@@ -3,6 +3,7 @@ package cloudant
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"strconv"
 
 	request "github.com/parnurzeal/gorequest"
@@ -242,4 +243,27 @@ func (ddoc *DesignDocument) View(db *DB, view string) (*ViewResp, error) {
 		return nil, errs[len(errs)-1]
 	}
 	return body, nil
+}
+
+// UpdateDocumentByUpdateHandler ...
+// Cloudant doc: https://cloud.ibm.com/docs/services/Cloudant?topic=cloudant-design-documents#update-handlers
+func (db *DB) UpdateDocumentByUpdateHandler(id, designID, updateHandlerNamer string, document interface{}) error {
+	req := request.New()
+	path := "/_design/" + designID + "/_update/" + updateHandlerNamer + "/" + id
+	resp, _, errs := req.SetBasicAuth(db.username, db.password).Put(db.path + path).Send(document).End()
+	if errs != nil {
+		return errs[0]
+	}
+	if resp.StatusCode >= 400 {
+		return errors.New("Error in updating document: " + strconv.Itoa(resp.StatusCode))
+	}
+	responseData, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+	// It is expeted that update handler should return 'ok' on success else return error.
+	if string(responseData) != "ok" {
+		return errors.New(string(responseData))
+	}
+	return nil
 }
