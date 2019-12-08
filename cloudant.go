@@ -214,7 +214,8 @@ type SearchResp struct {
 
 // Search indexes, defined in design documents.
 // Cloudant doc: https://docs.cloudant.com/search.html
-func (ddoc *DesignDocument) Search(db *DB, index, query, bookmark string, limit int) (*SearchResp, error) {
+// 'sort' parameter added as a variadic arg not to break current usages
+func (ddoc *DesignDocument) Search(db *DB, index, query, bookmark string, limit int, sort ...string) (*SearchResp, error) {
 	path := "/" + ddoc.ID + "/_search/" + index
 	body := &SearchResp{}
 	req := request.New()
@@ -226,6 +227,9 @@ func (ddoc *DesignDocument) Search(db *DB, index, query, bookmark string, limit 
 		Query("limit=" + strconv.Itoa(limit))
 	if bookmark != "" {
 		req = req.Query("bookmark=" + bookmark)
+	}
+	if len(sort) > 0 {
+		req = req.Query(fmt.Sprintf("sort=%q", sort[0]))
 	}
 	if _, _, errs := req.EndStruct(body); errs != nil {
 		return nil, errs[len(errs)-1]
