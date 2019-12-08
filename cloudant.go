@@ -54,10 +54,12 @@ type Index struct {
 
 // NewClient ...
 func NewClient(username string, password string) (*Client, error) {
-	auth := couchdb.BasicAuth(username, password)
 	url := fmt.Sprintf("https://%s.cloudant.com", username)
 	couchClient, err := couchdb.NewClient(url, nil)
-	couchClient.SetAuth(auth)
+	if password != "" {
+		auth := couchdb.BasicAuth(username, password)
+		couchClient.SetAuth(auth)
+	}
 	return &Client{Client: couchClient, username: username, password: password}, err
 }
 
@@ -127,13 +129,14 @@ func (db *DB) GetAllDocument(result interface{}, opts Options) error {
 func (db *DB) SearchDocument(query Query) (result []interface{}, err error) {
 	req := request.New()
 	path := "/_find"
-
 	var data struct {
 		Docs     []interface{}
 		Bookmark string `json:"bookmark"`
 	}
-	_, _, errs := req.SetBasicAuth(db.username, db.password).Post(db.path + path).Send(query).EndStruct(&data)
-
+	if db.password != "" {
+		req.SetBasicAuth(db.username, db.password)
+	}
+	_, _, errs := req.Post(db.path + path).Send(query).EndStruct(&data)
 	if errs != nil {
 		return nil, errs[0]
 	}
@@ -144,8 +147,10 @@ func (db *DB) SearchDocument(query Query) (result []interface{}, err error) {
 func (db *DB) SetIndex(index Index) error {
 	req := request.New()
 	path := "/_index"
-
-	resp, _, errs := req.SetBasicAuth(db.username, db.password).Post(db.path + path).Send(index).End()
+	if db.password != "" {
+		req.SetBasicAuth(db.username, db.password)
+	}
+	resp, _, errs := req.Post(db.path + path).Send(index).End()
 	if errs != nil {
 		return errs[0]
 	}
@@ -164,7 +169,10 @@ func (db *DB) CreateDesignDoc(name string, designJSON string) error {
 	}
 	req := request.New()
 	path := "/_design/" + name
-	_, _, errs := req.SetBasicAuth(db.username, db.password).Put(db.path + path).SendString(designJSON).EndStruct(&data)
+	if db.password != "" {
+		req.SetBasicAuth(db.username, db.password)
+	}
+	_, _, errs := req.Put(db.path + path).SendString(designJSON).EndStruct(&data)
 	if errs != nil {
 		return errs[0]
 	}
@@ -209,9 +217,11 @@ type SearchResp struct {
 func (ddoc *DesignDocument) Search(db *DB, index, query, bookmark string, limit int) (*SearchResp, error) {
 	path := "/" + ddoc.ID + "/_search/" + index
 	body := &SearchResp{}
-	req := request.New().
-		SetBasicAuth(db.username, db.password).
-		Get(db.path + path).
+	req := request.New()
+	if db.password != "" {
+		req.SetBasicAuth(db.username, db.password)
+	}
+	req.Get(db.path + path).
 		Query("query=" + query).
 		Query("limit=" + strconv.Itoa(limit))
 	if bookmark != "" {
@@ -235,10 +245,11 @@ type ViewResp struct {
 func (ddoc *DesignDocument) View(db *DB, view string) (*ViewResp, error) {
 	path := "/" + ddoc.ID + "/_view/" + view
 	body := &ViewResp{}
-	req := request.New().
-		SetBasicAuth(db.username, db.password).
-		Get(db.path + path)
-	if _, _, errs := req.EndStruct(body); errs != nil {
+	req := request.New()
+	if db.password != "" {
+		req.SetBasicAuth(db.username, db.password)
+	}
+	if _, _, errs := req.Get(db.path + path).EndStruct(body); errs != nil {
 		return nil, errs[len(errs)-1]
 	}
 	return body, nil
