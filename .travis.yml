@@ -1,17 +1,15 @@
 language: go
 
 go:
-  - 1.7.1
+  - 1.13.5
   - tip
 
+cache:
+  directories:
+    - $GOPATH/pkg/mod/cache/download
+  timeout: 3600 # 1 hour
+
 sudo: true
-
-before_install:
-  - sudo add-apt-repository ppa:masterminds/glide -y && sudo apt-get update -q
-  - sudo apt-get install glide -y
-
-before_script:
-  - make deps
 
 script:
   - make test

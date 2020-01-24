@@ -1,24 +1,26 @@
 package cloudant
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"strconv"
 
+	"github.com/go-kivik/kivik"
+
 	request "github.com/parnurzeal/gorequest"
-	couchdb "github.com/timjacobi/go-couchdb"
 )
 
 // Client ...
 type Client struct {
-	Client   *couchdb.Client
+	Client   *kivik.Client
 	username string
 	password string
 }
 
 // DB ...
 type DB struct {
-	*couchdb.DB
+	*kivik.DB
 	username string
 	password string
 	path     string
@@ -31,7 +33,7 @@ func (c *Client) DB(name string) *DB {
 }
 
 // Options ...
-type Options couchdb.Options
+type Options kivik.Options
 
 // Query ...
 type Query struct {
@@ -54,24 +56,23 @@ type Index struct {
 
 // NewClient ...
 func NewClient(username string, password string) (*Client, error) {
-	auth := couchdb.BasicAuth(username, password)
+	auth := kivik.BasicAuth(username, password)
 	url := fmt.Sprintf("https://%s.cloudant.com", username)
-	couchClient, err := couchdb.NewClient(url, nil)
+	couchClient, err := kivik.NewClient(url, nil)
 	couchClient.SetAuth(auth)
 	return &Client{Client: couchClient, username: username, password: password}, err
 }
 
 // IsAlive check whether a server is alive.
-func (c *Client) IsAlive() error {
-	return c.Client.Ping()
+func (c *Client) IsAlive() (bool, error) {
+	return c.Client.Ping(context.Background())
 }
 
 // CreateDB ensures that a database with the given name exists.
 func (c *Client) CreateDB(dbName string) (*DB, error) {
-	var db *couchdb.DB
-	var err error
-	if db, err = c.Client.CreateDB(dbName); err != nil {
-		return nil, err
+	var db *kivik.DB
+	if dbErr := c.Client.CreateDB(context.Background(), dbName); dbErr != nil {
+		return nil, dbErr
 	}
 	dbPath := c.Client.URL() + "/" + dbName
 	return &DB{db, c.username, c.password, dbPath}, nil
@@ -79,7 +80,7 @@ func (c *Client) CreateDB(dbName string) (*DB, error) {
 
 // EnsureDB ensures that a database with the given name exists.
 func (c *Client) EnsureDB(name string) (*DB, error) {
-	var db *couchdb.DB
+	var db *kivik.DB
 	var err error
 	if db, err = c.Client.EnsureDB(name); err != nil {
 		return nil, err
@@ -110,7 +111,7 @@ func (db *DB) UpdateDocument(id string, rev string, doc interface{}) (string, er
 
 // GetDocument ...
 func (db *DB) GetDocument(id string, doc interface{}, opts Options) error {
-	return db.Get(id, doc, couchdb.Options(opts))
+	return db.Get(id, doc, kivik.Options(opts))
 }
 
 // GetDocumentRev gets the current document revision.
@@ -120,7 +121,7 @@ func (db *DB) GetDocumentRev(id string) (string, error) {
 
 // GetAllDocument ...
 func (db *DB) GetAllDocument(result interface{}, opts Options) error {
-	return db.AllDocs(result, couchdb.Options(opts))
+	return db.AllDocs(result, kivik.Options(opts))
 }
 
 // SearchDocument ...

@@ -1,12 +1,15 @@
-GOPACKAGES=$(shell glide novendor)
+GO111MODULE := on
+export
+GOPACKAGES=$(shell go list ./... | grep -v /vendor/)
 GOFILES=$(shell find . -type f -name '*.go' -not -path "./vendor/*")
 
 .PHONY: all
 all: deps fmt vet test
 
-.PHONY: deps
-deps:
-	glide install
+.PHONY: updatedeps
+updatedeps:
+	go get -u=patch ./...
+	go mod tidy
 
 .PHONY: fmt
 fmt:
@@ -14,7 +17,8 @@ fmt:
 
 .PHONY: test
 test:
-	go test -v -race ${GOPACKAGES}
+	go test -race -covermode=atomic -coverprofile=cover.out ./...
+	# go test -v -race ${GOPACKAGES}
 
 .PHONY: vet
 vet:
