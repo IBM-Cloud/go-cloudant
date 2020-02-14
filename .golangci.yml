@@ -1,0 +1,19 @@
+linters:
+  disable-all: true
+  enable:
+    - golint
+    - gofmt
+    - gosec
+    - gosimple
+    - staticcheck
+    - unused
+    - govet
+    - misspell
+    - varcheck
+    - structcheck
+    - deadcode
+    - gocritic
+    - unparam
+    - unconvert
+
+    # See: https://github.com/golangci/golangci-lint

@@ -168,7 +168,7 @@ func (db *DB) CreateDesignDoc(name string, designJSON string) error {
 	if errs != nil {
 		return errs[0]
 	}
-	if data.Ok != true {
+	if !data.Ok {
 		return errors.New("Error in creating design doc")
 	}
 	return nil

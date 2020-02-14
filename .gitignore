@@ -25,3 +25,4 @@ _testmain.go
 *.prof
 
 .DS_Store
+cover.out

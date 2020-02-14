@@ -2,9 +2,9 @@
 
 # go-cloudant
 
-go-cloudant is a Cloudant DB client written in Go. It takes advantage 
+go-cloudant is a Cloudant DB client written in Go. It takes advantage
 of the go-couchdb client and add Index and Search into
-it to ease the usage of the Cloudant DB. Also, it tries to simplify the 
+it to ease the usage of the Cloudant DB. Also, it tries to simplify the
 use of couchdb library by adding more native structs.
 
 The go-couchdb credits go to `fjl/go-couchdb` and `timjacobi/go-couchdb`
@@ -26,6 +26,15 @@ All methods should be covered by tests, and the Makefile will also check
 the format of the code, so try to use `make` before the commit.
 
 ## Contribution
-    
-To make contributions, please add tests to the methods or functionality 
+
+To make contributions, please add tests to the methods or functionality
 you've added.
+
+# Running `make fmt`
+
+There is a prerequisite for running `make fmt` that you have `golangci-lint` installed.
+
+Please install the latest version by running:
+```bash
+curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b $(go env GOPATH)/bin v1.23.6
+```

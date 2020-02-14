@@ -70,14 +70,17 @@ func TestDocumentCRUDMap(t *testing.T) {
 	t.Log("Testing doc get with map")
 	resultData := make(map[string]string)
 	err = testDB.GetDocument(id, &resultData, Options{})
+	assert.NoError(t, err)
 	assert.Equal(t, "test", resultData["name"])
 
 	// Step 3. Update Document with id
 	t.Log("Testing doc update with map")
 	testData["id"] = "updated123"
 	newRev, err := testDB.UpdateDocument(id, rev, testData)
+	assert.NoError(t, err)
 	resultData = make(map[string]string)
 	err = testDB.GetDocument(id, &resultData, Options{})
+	assert.NoError(t, err)
 	assert.Equal(t, "updated123", resultData["id"])
 
 	//Step 4. Delete Document with id
@@ -104,14 +107,17 @@ func TestDocumentCRUDStruct(t *testing.T) {
 	t.Log("Testing doc get with struct")
 	resultData := data{}
 	err = testDB.GetDocument(id, &resultData, Options{})
+	assert.NoError(t, err)
 	assert.Equal(t, "test2", resultData.Name)
 
 	// Step 3. Update Document with id
 	t.Log("Testing doc update with struct")
 	testData.ID = "updated123"
 	newRev, err := testDB.UpdateDocument(id, rev, testData)
+	assert.NoError(t, err)
 	resultData = data{}
 	err = testDB.GetDocument(id, &resultData, Options{})
+	assert.NoError(t, err)
 	assert.Equal(t, "updated123", resultData.ID)
 
 	// Step 4. Delete Document with id

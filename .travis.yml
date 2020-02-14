@@ -9,6 +9,7 @@ sudo: true
 before_install:
   - sudo add-apt-repository ppa:masterminds/glide -y && sudo apt-get update -q
   - sudo apt-get install glide -y
+  - curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b $(go env GOPATH)/bin v1.23.6
 
 before_script:
   - make deps
@@ -17,3 +18,4 @@ script:
   - make test
   - make vet
   - make fmt
+  - make lint
