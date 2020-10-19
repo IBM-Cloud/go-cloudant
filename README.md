@@ -1,5 +1,7 @@
 [![Build Status](https://travis-ci.org/IBM-Bluemix/go-cloudant.svg?branch=master)](https://travis-ci.org/IBM-Bluemix/go-cloudant)
 
+**Note: This library is unsupported and not maintained by IBM Cloudant.  [Click here](https://github.com/IBM/cloudant-go-sdk) for the official and supported Cloudant Go client library.**
+
 # go-cloudant
 
 go-cloudant is a Cloudant DB client written in Go. It takes advantage 
